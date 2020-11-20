@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>
+            Login form
+        </title>
+
+        <script type="text/javascript">
+
+            window.onload = () =>{
+                if(localStorage.getItem('auth_token')){
+                    let payload = parseJwt(localStorage.getItem('auth_token'))
+                    document.getElementById('greet').innerHTML = `Hello, ${payload.email}, your role is ${payload.role}`
+                }
+            }
+
+            function login(){
+                event.preventDefault();
+
+                let url = '/login?email=' + event.target.email.value + '&password=' + event.target.password.value
+
+                fetch(url).then((response)=>{
+                    response.json().then((response)=>{
+                        console.log(response)
+                        localStorage.setItem('auth_token',response.token)
+                        let payload = parseJwt(response.token)
+                        document.getElementById('greet').innerHTML = `Hello, ${payload.email}, your role is ${payload.role}`
+                    })
+                })
+            }
+
+            function logout(){
+                localStorage.removeItem('auth_token')
+                document.getElementById('greet').innerHTML = ''
+            }
+            const parseJwt = (token) => {
+                try {
+                    return JSON.parse(atob(token.split('.')[1]));
+                } catch (e) {
+                    return null;
+                    }
+                };
+        </script>
+    </head>
+
+    <body>
+        <div id="greet">
+
+        </div>
+        <form onsubmit="login()">
+        
+            <span>E-mail</span>
+            <input name="email" id="email"><br/>
+
+            <span>Password</span>
+            <input type="password" name="password" id="password"><br/>
+
+            <input type="submit" value="Login">
+        </form>
+        <br/>
+        <button onclick="logout()">Logout</button>
+    </body>
+</html>
